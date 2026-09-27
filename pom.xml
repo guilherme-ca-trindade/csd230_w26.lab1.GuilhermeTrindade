@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>csd230</groupId>
-	<artifactId>FirstnameLastname</artifactId>
+	<artifactId>csd230_w26.lab1.GuilhermeTrindade</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>Application</name>
 	<description>Lab 1</description>

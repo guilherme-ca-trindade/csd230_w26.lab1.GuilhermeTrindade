@@ -4,6 +4,7 @@ import java.util.Objects;
 
 public class Book extends Publication {
     private String author = "";
+    private String isbn = "";
 
     public Book() {
         super();
@@ -49,6 +50,14 @@ public class Book extends Publication {
 
     public String getAuthor() {
         return author;
+    }
+
+    public String getIsbn() {
+        return isbn;
+    }
+
+    public void setIsbn(String isbn) {
+        this.isbn = isbn;
     }
 
     public void setAuthor(String author) {
