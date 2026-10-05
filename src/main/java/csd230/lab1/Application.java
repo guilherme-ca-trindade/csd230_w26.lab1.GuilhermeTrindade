@@ -2,6 +2,7 @@ package csd230.lab1;
 
 import com.github.javafaker.Commerce;
 import com.github.javafaker.Faker;
+import csd230.lab1.controllers.CartController;
 import csd230.lab1.entities.BookEntity;
 import csd230.lab1.entities.CartEntity;
 import csd230.lab1.entities.DiscMagEntity;
@@ -12,6 +13,7 @@ import csd230.lab1.repositories.BookEntityRepository;
 import csd230.lab1.repositories.CartEntityRepository;
 import csd230.lab1.repositories.DiscMagEntityRepository;
 import csd230.lab1.repositories.MagazineEntityRepository;
+import csd230.lab1.repositories.OrderEntityRepository;
 import csd230.lab1.repositories.ProductEntityRepository;
 import csd230.lab1.repositories.TicketEntityRepository;
 import jakarta.transaction.Transactional;
@@ -33,28 +35,39 @@ public class Application implements CommandLineRunner {
     private final MagazineEntityRepository magazineRepository;
     private final DiscMagEntityRepository discMagRepository;
     private final TicketEntityRepository ticketRepository;
+    private final OrderEntityRepository orderRepository;   // Lab 2
 
     public Application(ProductEntityRepository productRepository,
                        CartEntityRepository cartRepository,
                        BookEntityRepository bookRepository,
                        MagazineEntityRepository magazineRepository,
                        DiscMagEntityRepository discMagRepository,
-                       TicketEntityRepository ticketRepository) {
+                       TicketEntityRepository ticketRepository,
+                       OrderEntityRepository orderRepository) {
         this.productRepository = productRepository;
         this.cartRepository = cartRepository;
         this.bookRepository = bookRepository;
         this.magazineRepository = magazineRepository;
         this.discMagRepository = discMagRepository;
         this.ticketRepository = ticketRepository;
+        this.orderRepository = orderRepository;
     }
 
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
     }
 
+    // one CommandLineRunner only, as the lectures ask - it finishes during startup so
+    // Tomcat can then serve requests, no console menu or input loop in here
     @Override
     @Transactional
     public void run(String... args) throws Exception {
+        runLab1ConsoleDemo();   // Lab 1, unchanged
+        seedWebStore();         // data the browser pages need
+    }
+
+    /** Lab 1: the repository CRUD walk-through. */
+    private void runLab1ConsoleDemo() {
         Faker faker = new Faker();
         Commerce cm = faker.commerce();
 
@@ -234,6 +247,47 @@ public class Application implements CommandLineRunner {
             System.out.println(c);
             c.getProducts().forEach(p -> System.out.println("    " + p));
         });
+    }
+
+    /**
+     * Data for the web pages. The Lab 1 demo seeds random Faker books, which is fine for
+     * testing queries but changes every run - these three have fixed titles and prices so
+     * the checkout demo is repeatable.
+     */
+    private void seedWebStore() {
+        // ------------------------------------------------------------------
+        // WEB STORE SEED - fixed data for the browser pages
+        // ------------------------------------------------------------------
+        banner("WEB STORE SEED");
+
+        // "The Hobbit" at 10 copies is the example the Lab 2 test flow uses
+        addBookIfMissing("The Hobbit", 24.99, 10, "J.R.R. Tolkien", "9780261103344");
+        addBookIfMissing("Spring MVC Basics", 29.99, 5, "Course Example", "9780000000011");
+        addBookIfMissing("Thymeleaf in Practice", 34.99, 4, "Course Example", "9780000000012");
+
+        // the shared cart must exist before the first "Add to Cart" click. ddl-auto=create
+        // rebuilds the schema each start, so the first cart saved gets id 1 - cart1 above
+        CartEntity defaultCart = cartRepository.findByIdWithProducts(CartController.DEFAULT_CART_ID)
+                .orElseGet(() -> cartRepository.save(new CartEntity()));
+
+        // the Lab 1 demo left products in it - empty it for a clean checkout demo
+        defaultCart.getProducts().clear();
+        cartRepository.save(defaultCart);
+
+        System.out.println("  books on sale   : " + bookRepository.count());
+        System.out.println("  default cart id : " + defaultCart.getId()
+                + " (" + defaultCart.getProducts().size() + " items)");
+        System.out.println("  orders on file  : " + orderRepository.count());
+        System.out.println();
+        System.out.println("  Ready - open http://localhost:8080/books");
+    }
+
+    private void addBookIfMissing(String title, double price, int copies, String author, String isbn) {
+        if (bookRepository.findByTitle(title).isEmpty()) {
+            BookEntity book = new BookEntity(title, price, copies, author, isbn);
+            book.setProductId("SKU-" + isbn);
+            bookRepository.save(book);
+        }
     }
 
     private static void banner(String title) {
