@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Book List</title>
+</head>
+<body>
+<h1>Book List</h1>
+
+<!-- flash messages from RedirectAttributes, they survive one redirect -->
+<p th:if="${message}" th:text="${message}" style="color: green;"></p>
+<p th:if="${error}" th:text="${error}" style="color: red;"></p>
+
+<p>
+    <a th:href="@{/cart}">View Cart</a>
+</p>
+
+<table border="1">
+    <thead>
+    <tr>
+        <th>Title</th>
+        <th>Author</th>
+        <th>Price</th>
+        <th>Copies</th>
+        <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    <!-- one row per book in the ${books} list the controller added -->
+    <tr th:each="book : ${books}">
+        <td th:text="${book.title}"></td>
+        <td th:text="${book.author}"></td>
+        <td th:text="'$' + ${#numbers.formatDecimal(book.price, 1, 2)}"></td>
+        <!-- Lab 2: this number must drop by 1 after a checkout -->
+        <td th:text="${book.copies}"></td>
+        <td>
+            <!-- @{...} fills in the id and adds the context path -->
+            <a th:href="@{/books/{id}(id=${book.id})}">Details</a> |
+            <a th:href="@{/books/edit/{id}(id=${book.id})}">Edit</a> |
+            <a th:href="@{/books/delete/{id}(id=${book.id})}">Delete</a> |
+            <strong><a th:href="@{/cart/add/{id}(id=${book.id})}">Add to Cart</a></strong>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+<br/>
+<a th:href="@{/books/add}">Add New Book</a>
+</body>
+</html>

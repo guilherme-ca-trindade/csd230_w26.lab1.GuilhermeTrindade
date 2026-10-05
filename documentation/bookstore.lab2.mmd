@@ -1,0 +1,136 @@
+%% Lab 2 CSD230 W26 - updated class diagram.
+classDiagram
+    Serializable <|.. ProductEntity
+    SaleableItem <|.. ProductEntity
+    ProductEntity <|-- TicketEntity
+    ProductEntity <|-- PublicationEntity
+    PublicationEntity <|-- BookEntity
+    PublicationEntity <|-- MagazineEntity
+    MagazineEntity <|-- DiscMagEntity
+
+    %% Lab 1: bidirectional many-to-many
+    CartEntity "0..*" <--> "0..*" ProductEntity : cart_products
+
+    %% Lab 2 (NEW): one directional - nothing asks a product which orders it was sold on
+    OrderEntity "0..*" --> "0..*" ProductEntity : order_products
+
+    %% Spring MVC layer
+    BookController ..> BookEntityRepository : uses
+    CartController ..> CartEntityRepository : uses
+    OrderController ..> OrderEntityRepository : uses
+    OrderController ..> CartEntityRepository : empties the cart
+    OrderController ..> ProductEntityRepository : saves new stock counts
+
+    class OrderEntity {
+        -Long id
+        -double totalAmount
+        -LocalDateTime orderDate
+        -Set~ProductEntity~ products
+        +OrderEntity()
+        +OrderEntity(LocalDateTime orderDate)
+        +addProduct(ProductEntity product)
+        +getTotalAmount()
+        +setTotalAmount(double totalAmount)
+        +getOrderDate()
+        +setOrderDate(LocalDateTime orderDate)
+        +getProducts()
+        +getItemCount()
+        +toString()
+        +equals()
+        +hashCode()
+    }
+
+    class CartEntity {
+        -Long id
+        -Set~ProductEntity~ products
+        +addProduct(ProductEntity product)
+        +removeProduct(ProductEntity product)
+        +getProducts()
+        +setProducts(Set products)
+    }
+
+    class ProductEntity {
+        <<Abstract>>
+        -Long id
+        -String productId
+        -Set~CartEntity~ carts
+        +getProductType()
+        +sellItem()
+        +getPrice()
+    }
+
+    class Serializable {
+        <<interface>>
+    }
+
+    class SaleableItem {
+        <<interface>>
+        +sellItem()
+        +getPrice()
+    }
+
+    class TicketEntity {
+        -String description
+        -double price
+        +sellItem()
+    }
+
+    class PublicationEntity {
+        <<Abstract>>
+        -String title
+        -double price
+        -int copies
+        +getPrice()
+        +getCopies()
+        +setCopies(int copies)
+        +sellItem()
+    }
+
+    class BookEntity {
+        -String author
+        -String isbn
+    }
+
+    class MagazineEntity {
+        -int orderQty
+        -LocalDateTime currentIssue
+    }
+
+    class DiscMagEntity {
+        -boolean hasDisc
+    }
+
+    class BookController {
+        +getAllBooks(Model)
+        +getBookById(Long, Model)
+        +addBook(BookEntity)
+        +editBook(Long, BookEntity)
+        +deleteBook(Long, RedirectAttributes)
+    }
+
+    class CartController {
+        +DEFAULT_CART_ID
+        +viewCart(Model)
+        +addToCart(Long, RedirectAttributes)
+        +removeFromCart(Long, RedirectAttributes)
+    }
+
+    class OrderController {
+        +checkout(RedirectAttributes)
+        +viewOrder(Long, Model)
+    }
+
+    class BookEntityRepository {
+        <<interface>>
+    }
+    class CartEntityRepository {
+        <<interface>>
+    }
+    class ProductEntityRepository {
+        <<interface>>
+    }
+    class OrderEntityRepository {
+        <<interface>>
+        +findByIdWithProducts(Long)
+        +findAllContainingProduct(Long)
+    }

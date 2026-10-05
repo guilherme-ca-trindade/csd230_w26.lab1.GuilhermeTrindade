@@ -42,6 +42,10 @@ public abstract class ProductEntity implements Serializable, SaleableItem {
     public String getProductId() { return productId; }
     public void setProductId(String productId) { this.productId = productId; }
 
+    // Lecture 2.5.1: lets a template ask a product what it really is with
+    // ${product.productType}, without casting
+    public String getProductType() { return this.getClass().getSimpleName(); }
+
     @Override public String toString() { return "ProductEntity{id=" + id + ", productId='" + productId + "'}"; }
 
     /**
