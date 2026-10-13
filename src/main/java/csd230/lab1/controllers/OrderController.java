@@ -4,9 +4,11 @@ import csd230.lab1.entities.CartEntity;
 import csd230.lab1.entities.OrderEntity;
 import csd230.lab1.entities.ProductEntity;
 import csd230.lab1.entities.PublicationEntity;
+import csd230.lab1.entities.UserEntity;
 import csd230.lab1.repositories.CartEntityRepository;
 import csd230.lab1.repositories.OrderEntityRepository;
 import csd230.lab1.repositories.ProductEntityRepository;
+import csd230.lab1.repositories.UserEntityRepository;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,13 +32,16 @@ public class OrderController {
     private final OrderEntityRepository orderRepository;
     private final CartEntityRepository cartRepository;
     private final ProductEntityRepository productRepository;
+    private final UserEntityRepository userRepository;   // Lab 3
 
     public OrderController(OrderEntityRepository orderRepository,
                            CartEntityRepository cartRepository,
-                           ProductEntityRepository productRepository) {
+                           ProductEntityRepository productRepository,
+                           UserEntityRepository userRepository) {
         this.orderRepository = orderRepository;
         this.cartRepository = cartRepository;
         this.productRepository = productRepository;
+        this.userRepository = userRepository;
     }
 
     /**
@@ -45,13 +51,14 @@ public class OrderController {
      */
     @PostMapping("/cart/checkout")
     @Transactional
-    public String checkout(RedirectAttributes flash) {
+    public String checkout(Principal principal, RedirectAttributes flash) {
 
         // ------------------------------------------------------------------
-        // THE CART - fetch join so its products are loaded
+        // THE CART - Lab 3: whoever is logged in, not a hardcoded id. Same lookup
+        // CartController does, so you can only ever check out your own cart.
         // ------------------------------------------------------------------
-        CartEntity cart = cartRepository.findByIdWithProducts(CartController.DEFAULT_CART_ID)
-                .orElse(null);
+        UserEntity user = userRepository.findByUsername(principal.getName());
+        CartEntity cart = cartRepository.findByUser(user);
 
         if (cart == null || cart.getProducts().isEmpty()) {
             flash.addFlashAttribute("error", "Your cart is empty - there is nothing to check out.");

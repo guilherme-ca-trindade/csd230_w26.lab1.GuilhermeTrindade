@@ -13,6 +13,10 @@
 <div th:if="${param.logout}" style="color:green">
     You have been logged out.
 </div>
+<!-- Lab 3: RegisterController sends them here after a successful sign-up -->
+<div th:if="${param.registered}" style="color:green">
+    Account created. Please sign in.
+</div>
 
 <!-- th:action adds the hidden CSRF token, a plain action="/login" would be rejected -->
 <form th:action="@{/login}" method="post">
@@ -26,5 +30,7 @@
         <input type="submit" value="Sign In"/>
     </div>
 </form>
+
+<p>New user? <a th:href="@{/register}">Register here</a></p>
 </body>
 </html>

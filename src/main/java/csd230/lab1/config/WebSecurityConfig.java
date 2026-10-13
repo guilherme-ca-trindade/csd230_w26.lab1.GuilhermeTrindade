@@ -30,8 +30,8 @@ public class WebSecurityConfig {
             .authorizeHttpRequests((requests) -> requests
                 // order matters - specific rules first, the catch-all last
 
-                // 1. public: the login page must be reachable before anyone is logged in
-                .requestMatchers("/h2-console/**", "/login", "/css/**", "/js/**").permitAll()
+                // 1. public: login and register have to work before anyone is logged in
+                .requestMatchers("/h2-console/**", "/login", "/register", "/css/**", "/js/**").permitAll()
 
                 // 2. admin only: the book CRUD. A USER hitting these gets 403 Forbidden
                 .requestMatchers("/books/add", "/books/edit/**", "/books/delete/**").hasRole("ADMIN")
