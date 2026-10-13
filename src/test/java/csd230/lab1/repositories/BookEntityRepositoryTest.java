@@ -4,8 +4,10 @@ import com.github.javafaker.Faker;
 import csd230.lab1.entities.BookEntity;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import csd230.lab1.TestSecurityConfig;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
+import org.springframework.context.annotation.Import;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DataJpaTest
+@Import(TestSecurityConfig.class)   // supplies the PasswordEncoder Application needs
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE) // use the application db (mysql), not an embedded h2
 @Transactional(propagation = Propagation.NOT_SUPPORTED)                      // don't roll back, so the rows stay visible in mysql
 class BookEntityRepositoryTest {

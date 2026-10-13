@@ -1,9 +1,22 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <title>Book List</title>
 </head>
 <body>
+
+<!-- Lecture 2.6: who is signed in, and the way out -->
+<div style="float:right">
+    Logged in as: <strong><span sec:authentication="name">User</span></strong>
+    (<span sec:authentication="principal.authorities">roles</span>)
+
+    <!-- POST, not a link - a GET logout could be triggered by any page you visit -->
+    <form th:action="@{/logout}" method="post" style="display:inline;">
+        <input type="submit" value="Sign Out"/>
+    </form>
+</div>
+
 <h1>Book List</h1>
 
 <!-- flash messages from RedirectAttributes, they survive one redirect -->
@@ -35,15 +48,22 @@
         <td>
             <!-- @{...} fills in the id and adds the context path -->
             <a th:href="@{/books/{id}(id=${book.id})}">Details</a> |
-            <a th:href="@{/books/edit/{id}(id=${book.id})}">Edit</a> |
-            <a th:href="@{/books/delete/{id}(id=${book.id})}">Delete</a> |
             <strong><a th:href="@{/cart/add/{id}(id=${book.id})}">Add to Cart</a></strong>
+
+            <!-- sec:authorize only hides the links. WebSecurityConfig is what actually
+                 blocks the URLs, so typing them by hand still gives a USER a 403 -->
+            <span sec:authorize="hasRole('ADMIN')">
+                | <a th:href="@{/books/edit/{id}(id=${book.id})}">Edit</a>
+                | <a th:href="@{/books/delete/{id}(id=${book.id})}">Delete</a>
+            </span>
         </td>
     </tr>
     </tbody>
 </table>
 
 <br/>
-<a th:href="@{/books/add}">Add New Book</a>
+<div sec:authorize="hasRole('ADMIN')">
+    <a th:href="@{/books/add}">Add New Book</a>
+</div>
 </body>
 </html>
