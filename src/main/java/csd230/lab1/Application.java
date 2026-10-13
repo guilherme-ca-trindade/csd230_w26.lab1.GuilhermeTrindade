@@ -9,6 +9,7 @@ import csd230.lab1.entities.DiscMagEntity;
 import csd230.lab1.entities.MagazineEntity;
 import csd230.lab1.entities.ProductEntity;
 import csd230.lab1.entities.TicketEntity;
+import csd230.lab1.entities.UserEntity;
 import csd230.lab1.repositories.BookEntityRepository;
 import csd230.lab1.repositories.CartEntityRepository;
 import csd230.lab1.repositories.DiscMagEntityRepository;
@@ -16,10 +17,12 @@ import csd230.lab1.repositories.MagazineEntityRepository;
 import csd230.lab1.repositories.OrderEntityRepository;
 import csd230.lab1.repositories.ProductEntityRepository;
 import csd230.lab1.repositories.TicketEntityRepository;
+import csd230.lab1.repositories.UserEntityRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -36,6 +39,8 @@ public class Application implements CommandLineRunner {
     private final DiscMagEntityRepository discMagRepository;
     private final TicketEntityRepository ticketRepository;
     private final OrderEntityRepository orderRepository;   // Lab 2
+    private final UserEntityRepository userRepository;     // Lecture 2.6
+    private final PasswordEncoder passwordEncoder;         // Lecture 2.6, bean from WebSecurityConfig
 
     public Application(ProductEntityRepository productRepository,
                        CartEntityRepository cartRepository,
@@ -43,7 +48,9 @@ public class Application implements CommandLineRunner {
                        MagazineEntityRepository magazineRepository,
                        DiscMagEntityRepository discMagRepository,
                        TicketEntityRepository ticketRepository,
-                       OrderEntityRepository orderRepository) {
+                       OrderEntityRepository orderRepository,
+                       UserEntityRepository userRepository,
+                       PasswordEncoder passwordEncoder) {
         this.productRepository = productRepository;
         this.cartRepository = cartRepository;
         this.bookRepository = bookRepository;
@@ -51,6 +58,8 @@ public class Application implements CommandLineRunner {
         this.discMagRepository = discMagRepository;
         this.ticketRepository = ticketRepository;
         this.orderRepository = orderRepository;
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public static void main(String[] args) {
@@ -64,6 +73,7 @@ public class Application implements CommandLineRunner {
     public void run(String... args) throws Exception {
         runLab1ConsoleDemo();   // Lab 1, unchanged
         seedWebStore();         // data the browser pages need
+        seedUsers();            // Lecture 2.6, logins for the secured app
     }
 
     /** Lab 1: the repository CRUD walk-through. */
@@ -278,8 +288,34 @@ public class Application implements CommandLineRunner {
         System.out.println("  default cart id : " + defaultCart.getId()
                 + " (" + defaultCart.getProducts().size() + " items)");
         System.out.println("  orders on file  : " + orderRepository.count());
+    }
+
+    /**
+     * Lecture 2.6: the logins. Without this nobody could get past the login page, since
+     * there is no registration form yet.
+     */
+    private void seedUsers() {
+        // ------------------------------------------------------------------
+        // USERS - the two accounts the security demo logs in with
+        // ------------------------------------------------------------------
+        banner("USERS");
+
+        // encode() turns "admin" into a BCrypt hash before it ever reaches the database.
+        // Writing the plain word here instead would make the login fail, because Spring
+        // hashes what gets typed and compares hashes.
+        addUserIfMissing("admin", "admin", "ADMIN");
+        addUserIfMissing("user", "user", "USER");
+
+        userRepository.findAll().forEach(u -> System.out.println("  " + u));
         System.out.println();
         System.out.println("  Ready - open http://localhost:8080/books");
+        System.out.println("  Sign in with admin/admin (full access) or user/user (browse and buy)");
+    }
+
+    private void addUserIfMissing(String username, String rawPassword, String role) {
+        if (userRepository.findByUsername(username) == null) {
+            userRepository.save(new UserEntity(username, passwordEncoder.encode(rawPassword), role));
+        }
     }
 
     private void addBookIfMissing(String title, double price, int copies, String author, String isbn) {
