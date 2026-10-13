@@ -2,7 +2,6 @@ package csd230.lab1;
 
 import com.github.javafaker.Commerce;
 import com.github.javafaker.Faker;
-import csd230.lab1.controllers.CartController;
 import csd230.lab1.entities.BookEntity;
 import csd230.lab1.entities.CartEntity;
 import csd230.lab1.entities.DiscMagEntity;
@@ -275,18 +274,13 @@ public class Application implements CommandLineRunner {
         addBookIfMissing("Spring MVC Basics", 29.99, 5, "Course Example", "9780000000011");
         addBookIfMissing("Thymeleaf in Practice", 34.99, 4, "Course Example", "9780000000012");
 
-        // the shared cart must exist before the first "Add to Cart" click. ddl-auto=create
-        // rebuilds the schema each start, so the first cart saved gets id 1 - cart1 above
-        CartEntity defaultCart = cartRepository.findByIdWithProducts(CartController.DEFAULT_CART_ID)
-                .orElseGet(() -> cartRepository.save(new CartEntity()));
-
-        // the Lab 1 demo left products in it - empty it for a clean checkout demo
-        defaultCart.getProducts().clear();
-        cartRepository.save(defaultCart);
+        // Lab 3: no shared cart is seeded any more. Carts belong to a user now, and
+        // CartController creates one the first time that user opens their cart.
+        // The carts the Lab 1 demo left behind have no owner and are unreachable
+        // from the web pages.
 
         System.out.println("  books on sale   : " + bookRepository.count());
-        System.out.println("  default cart id : " + defaultCart.getId()
-                + " (" + defaultCart.getProducts().size() + " items)");
+        System.out.println("  carts on file   : " + cartRepository.count() + " (Lab 1 demo, no owner)");
         System.out.println("  orders on file  : " + orderRepository.count());
     }
 

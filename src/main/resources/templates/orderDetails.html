@@ -4,6 +4,9 @@
     <title>Order Confirmation</title>
 </head>
 <body>
+
+<div th:replace="~{fragments/userBar :: userBar}"></div>
+
 <h1>Order Confirmation</h1>
 
 <div th:if="${order}">

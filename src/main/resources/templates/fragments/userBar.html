@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+
+<!-- Lab 3: who is signed in, and the way out. Kept in one fragment so every secured
+     page shows the same bar instead of three copies of it drifting apart. -->
+<div th:fragment="userBar" style="float:right">
+    Logged in as: <strong><span sec:authentication="name">User</span></strong>
+    (<span sec:authentication="principal.authorities">roles</span>)
+
+    <!-- POST, not a link - a GET logout could be triggered by any page you visit -->
+    <form th:action="@{/logout}" method="post" style="display:inline;">
+        <input type="submit" value="Sign Out"/>
+    </form>
+</div>
+
+</body>
+</html>

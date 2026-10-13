@@ -62,6 +62,12 @@
 			<artifactId>h2</artifactId>
 			<scope>runtime</scope>
 		</dependency>
+		<!-- Lab 3: Boot 4 moved the /h2-console servlet into its own module -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-h2console</artifactId>
+			<scope>runtime</scope>
+		</dependency>
 		<!-- Lecture 2.6: Spring Security -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

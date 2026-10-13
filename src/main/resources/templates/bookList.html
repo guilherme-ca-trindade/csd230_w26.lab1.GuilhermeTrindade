@@ -6,16 +6,7 @@
 </head>
 <body>
 
-<!-- Lecture 2.6: who is signed in, and the way out -->
-<div style="float:right">
-    Logged in as: <strong><span sec:authentication="name">User</span></strong>
-    (<span sec:authentication="principal.authorities">roles</span>)
-
-    <!-- POST, not a link - a GET logout could be triggered by any page you visit -->
-    <form th:action="@{/logout}" method="post" style="display:inline;">
-        <input type="submit" value="Sign Out"/>
-    </form>
-</div>
+<div th:replace="~{fragments/userBar :: userBar}"></div>
 
 <h1>Book List</h1>
 

@@ -1,6 +1,7 @@
 package csd230.lab1.repositories;
 
 import csd230.lab1.entities.CartEntity;
+import csd230.lab1.entities.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -21,4 +22,7 @@ public interface CartEntityRepository extends JpaRepository<CartEntity, Long> {
 
     @Query("SELECT c FROM CartEntity c LEFT JOIN FETCH c.products WHERE c.id = :id")
     Optional<CartEntity> findByIdWithProducts(@Param("id") Long id);
+
+    // --- Lab 3: the cart belonging to one user, replaces the hardcoded id 1 ---
+    CartEntity findByUser(UserEntity user);
 }
