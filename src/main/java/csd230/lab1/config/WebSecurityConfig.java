@@ -30,8 +30,17 @@ public class WebSecurityConfig {
             .authorizeHttpRequests((requests) -> requests
                 // order matters - specific rules first, the catch-all last
 
-                // 1. public: login and register have to work before anyone is logged in
-                .requestMatchers("/h2-console/**", "/login", "/register", "/css/**", "/js/**").permitAll()
+                // 1. public: login and register have to work before anyone is logged in.
+                //    Lecture 2.9 adds the JSON API: a machine has no browser to show the
+                //    login form to, and /error has to be public too or the 404 from
+                //    BookNotFoundAdvice is swallowed and replaced by a redirect to /login.
+                .requestMatchers("/h2-console/**", "/login", "/register",
+                        "/css/**", "/js/**", "/api/rest/**", "/error").permitAll()
+
+                // Lecture 2.8: the Swagger pages are the API documentation, so they have
+                // to be readable before anyone signs in
+                .requestMatchers("/v3/api-docs/**", "/v3/api-docs.yaml",
+                        "/swagger-ui/**", "/swagger-ui.html").permitAll()
 
                 // 2. admin only: the book CRUD. A USER hitting these gets 403 Forbidden
                 .requestMatchers("/books/add", "/books/edit/**", "/books/delete/**").hasRole("ADMIN")
@@ -53,7 +62,9 @@ public class WebSecurityConfig {
         // the H2 console renders in frames and sends no CSRF token, so it needs both
         // of these or it comes back as a blank page
         http.headers(headers -> headers.frameOptions(frameOptions -> frameOptions.disable()));
-        http.csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**"));
+        // Lecture 2.9: same reasoning for /api/rest/** - a REST client holds no session
+        // and so has no CSRF token to send. The browser routes keep the normal protection.
+        http.csrf(csrf -> csrf.ignoringRequestMatchers("/h2-console/**", "/api/rest/**"));
 
         return http.build();
     }

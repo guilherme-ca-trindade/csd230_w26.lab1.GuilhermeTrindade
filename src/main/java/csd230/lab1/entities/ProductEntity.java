@@ -1,5 +1,6 @@
 package csd230.lab1.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import csd230.lab1.pojos.SaleableItem;
 import jakarta.persistence.*;
 
@@ -33,6 +34,10 @@ public abstract class ProductEntity implements Serializable, SaleableItem {
 
     public ProductEntity(String productId) { this.productId = productId; }
 
+    // Lecture 2.9: kept out of the JSON. Jackson would follow carts -> products -> carts
+    // for ever, and the collection is LAZY so reading it after the repository call has
+    // already closed the session would throw instead.
+    @JsonIgnore
     public Set<CartEntity> getCarts() { return carts; }
     public void setCarts(Set<CartEntity> carts) { this.carts = carts; }
 

@@ -13,8 +13,11 @@ public class CashTill {
 
     public void sellItem(SaleableItem item) {
         item.sellItem();
-        runningTotal += item.getPrice();
-        System.out.println("Added $" + item.getPrice() + " to till.");
+        // Lecture 2.9: getPrice() returns Double now, so unwrap it before the arithmetic
+        Double price = item.getPrice();
+        double amount = (price == null ? 0.0 : price);
+        runningTotal += amount;
+        System.out.println("Added $" + amount + " to till.");
     }
 
     public double getRunningTotal() {

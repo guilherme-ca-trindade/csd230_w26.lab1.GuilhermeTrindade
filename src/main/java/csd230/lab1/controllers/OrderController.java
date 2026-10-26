@@ -80,7 +80,8 @@ public class OrderController {
             // only publications have copies - a ticket never runs out
             if (product instanceof PublicationEntity publication) {
 
-                if (publication.getCopies() <= 0) {
+                // null copies can only come from the JSON API, which does not require them
+                if (publication.getCopies() == null || publication.getCopies() <= 0) {
                     outOfStock.add(publication.getTitle());
                     continue;   // skip it rather than failing the whole order
                 }
@@ -89,7 +90,8 @@ public class OrderController {
                 publication.setCopies(publication.getCopies() - 1);
             }
 
-            total += product.getPrice();
+            Double price = product.getPrice();
+            total += (price == null ? 0.0 : price);
             order.addProduct(product);
             purchased.add(product);
         }

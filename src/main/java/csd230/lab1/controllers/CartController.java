@@ -2,7 +2,6 @@ package csd230.lab1.controllers;
 
 import csd230.lab1.entities.BookEntity;
 import csd230.lab1.entities.CartEntity;
-import csd230.lab1.entities.ProductEntity;
 import csd230.lab1.entities.UserEntity;
 import csd230.lab1.repositories.BookEntityRepository;
 import csd230.lab1.repositories.CartEntityRepository;
@@ -65,8 +64,10 @@ public class CartController {
         CartEntity cart = getCartForCurrentUser(principal);
 
         // worked out here, not in the template - a view displays numbers, it does not calculate them
+        // Lecture 2.9: getPrice() is a Double now, so a row created through the JSON API
+        // without a price would unbox to a NullPointerException here. Count it as 0.
         double total = cart.getProducts().stream()
-                .mapToDouble(ProductEntity::getPrice)
+                .mapToDouble(p -> p.getPrice() == null ? 0.0 : p.getPrice())
                 .sum();
 
         model.addAttribute("cart", cart);

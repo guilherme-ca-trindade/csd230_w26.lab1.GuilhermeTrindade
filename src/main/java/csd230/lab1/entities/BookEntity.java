@@ -11,8 +11,9 @@ public class BookEntity extends PublicationEntity {
     private String isbn;
 
     public BookEntity() {}
-    public BookEntity(String t, double p, int c, String a) { super(t, p, c); this.author = a; }
-    public BookEntity(String t, double p, int c, String a, String isbn) {
+    // Lecture 2.9: wrapper parameters, matching PublicationEntity
+    public BookEntity(String t, Double p, Integer c, String a) { super(t, p, c); this.author = a; }
+    public BookEntity(String t, Double p, Integer c, String a, String isbn) {
         super(t, p, c);
         this.author = a;
         this.isbn = isbn;
