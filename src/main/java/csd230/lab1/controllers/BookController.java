@@ -6,6 +6,9 @@ import csd230.lab1.entities.OrderEntity;
 import csd230.lab1.repositories.BookEntityRepository;
 import csd230.lab1.repositories.CartEntityRepository;
 import csd230.lab1.repositories.OrderEntityRepository;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
@@ -21,7 +24,13 @@ import java.util.List;
 /**
  * Lecture 2.5: the web front end for the books. @Controller means the methods return a
  * view name from src/main/resources/templates instead of JSON.
+ *
+ * Lecture 2.8: the @Tag / @Operation annotations are only there so SpringDoc can describe
+ * these routes on the Swagger page. They change nothing at runtime, and the "schema" of
+ * every response here is a rendered HTML page, which is exactly the point made in
+ * Lecture 2.7 - compare this class with BookRestController.
  */
+@Tag(name = "Books (MVC)", description = "Server rendered pages for the book catalogue - these return HTML, not JSON")
 @Controller
 @RequestMapping("/books")
 public class BookController {
@@ -39,12 +48,16 @@ public class BookController {
     }
 
     // typed to BookEntity, so Hibernate adds WHERE product_type = 'BOOK' by itself
+    @Operation(summary = "Get all books", description = "Returns the HTML view of the book list")
+    @ApiResponse(responseCode = "200", description = "Successfully retrieved list")
     @GetMapping
     public String getAllBooks(Model model) {
         model.addAttribute("books", bookRepository.findAll());
         return "bookList";
     }
 
+    @Operation(summary = "Get one book", description = "Returns the HTML detail page for a single book")
+    @ApiResponse(responseCode = "200", description = "Detail page rendered")
     @GetMapping("/{id}")
     public String getBookById(@PathVariable Long id, Model model) {
         BookEntity book = bookRepository.findById(id).orElse(null);
@@ -53,6 +66,7 @@ public class BookController {
     }
 
     // the empty object is what th:object binds the form to
+    @Operation(summary = "Show the add-book form", description = "ADMIN only")
     @GetMapping("/add")
     public String addBookForm(Model model) {
         model.addAttribute("book", new BookEntity());
@@ -63,12 +77,15 @@ public class BookController {
      * @ModelAttribute builds the BookEntity and calls the setters from the form fields.
      * Redirecting afterwards means a page refresh does not submit the form twice.
      */
+    @Operation(summary = "Submit the add-book form", description = "Saves the book and redirects to /books. ADMIN only")
+    @ApiResponse(responseCode = "302", description = "Redirect to /books")
     @PostMapping("/add")
     public String addBook(@ModelAttribute BookEntity book) {
         bookRepository.save(book);
         return "redirect:/books";
     }
 
+    @Operation(summary = "Show the edit-book form", description = "ADMIN only")
     @GetMapping("/edit/{id}")
     public String editBookForm(@PathVariable Long id, Model model) {
         BookEntity book = bookRepository.findById(id).orElse(null);
@@ -80,6 +97,8 @@ public class BookController {
      * Copy the values onto the real row instead of saving the form object - the form has
      * no isbn or productId field, so saving it directly would wipe those columns.
      */
+    @Operation(summary = "Submit the edit-book form", description = "Copies the submitted values onto the stored row. ADMIN only")
+    @ApiResponse(responseCode = "302", description = "Redirect to /books")
     @PostMapping("/edit/{id}")
     public String editBook(@PathVariable Long id, @ModelAttribute BookEntity updatedBook) {
         BookEntity existingBook = bookRepository.findById(id).orElse(null);
@@ -99,6 +118,8 @@ public class BookController {
      * is taken out of it first (Lecture 2.5), but an order is a receipt and must not
      * change, so a book that has already been sold is refused instead (Lab 2).
      */
+    @Operation(summary = "Delete a book", description = "Refuses books that already appear on an order. ADMIN only")
+    @ApiResponse(responseCode = "302", description = "Redirect to /books, with a flash message either way")
     @GetMapping("/delete/{id}")
     @Transactional
     public String deleteBook(@PathVariable Long id, RedirectAttributes flash) {
