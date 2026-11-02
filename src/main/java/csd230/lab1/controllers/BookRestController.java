@@ -2,6 +2,7 @@ package csd230.lab1.controllers;
 
 import csd230.lab1.entities.BookEntity;
 import csd230.lab1.repositories.BookEntityRepository;
+import csd230.lab1.services.ProductDeletionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -24,8 +25,9 @@ import java.util.List;
  * view name and no Thymeleaf template involved. CORS for /api/** is configured once in
  * Application.corsConfigurer(), so this class needs no @CrossOrigin of its own.
  *
- * The method bodies are the lecture's code as written. Two of them have known failures
- * against this project's schema - see documentation/lectures2.7-2.9-rest-notes.md.
+ * Lab 4: GET and POST are still the lecture's code. PUT and DELETE are not - the lecture's
+ * versions both answered 500 against this project's schema, for the reasons given on each
+ * method, so they now work the same way as the magazine, disc magazine and ticket controllers.
  */
 @Tag(name = "Book REST API", description = "JSON API for managing books")
 @RestController
@@ -33,9 +35,12 @@ import java.util.List;
 public class BookRestController {
 
     private final BookEntityRepository repository;
+    private final ProductDeletionService deletionService;
 
-    public BookRestController(BookEntityRepository repository) {
+    public BookRestController(BookEntityRepository repository,
+                              ProductDeletionService deletionService) {
         this.repository = repository;
+        this.deletionService = deletionService;
     }
 
     @Operation(summary = "List every book", description = "Returns the whole book table as a JSON array")
@@ -68,14 +73,14 @@ public class BookRestController {
      * PUT replaces the resource, which is what makes it idempotent: sending the same request
      * twice leaves the same single book behind, where POST would create two.
      *
-     * Known failure: the orElseGet branch cannot work here. BookEntity ids come from
-     * @GeneratedValue(IDENTITY), so save() on an object that already has an id is treated as a
-     * merge, and merging a row that does not exist throws StaleObjectStateException - a 500,
-     * not the 404 the lecture's section VI says to expect.
+     * The lecture's orElseGet branch cannot work here, which is why this throws instead.
+     * BookEntity ids come from @GeneratedValue(IDENTITY), so save() on an object that already
+     * has an id is treated as a merge, and merging a row that does not exist throws
+     * StaleObjectStateException - a 500. A missing id is a 404, not an invitation to create.
      */
-    @Operation(summary = "Replace a book",
-            description = "Overwrites the book at that id, or creates it at that id if it does not exist")
+    @Operation(summary = "Replace a book", description = "Overwrites the book at that id")
     @ApiResponse(responseCode = "200", description = "Book replaced")
+    @ApiResponse(responseCode = "404", description = "No book with that id")
     @PutMapping("/{id}")
     public BookEntity replaceBook(@RequestBody BookEntity newBook, @PathVariable Long id) {
         return repository.findById(id)
@@ -86,22 +91,26 @@ public class BookRestController {
                     book.setCopies(newBook.getCopies());
                     return repository.save(book);
                 })
-                .orElseGet(() -> {
-                    newBook.setId(id);
-                    return repository.save(newBook);
-                });
+                .orElseThrow(() -> new BookNotFoundException(id));
     }
 
     /**
-     * Known failure: a book that is sitting in a cart cannot be deleted this way, because
-     * cart_products still holds a row pointing at it. Hibernate raises a referential integrity
-     * violation and the caller gets a 500. BookController.deleteBook handles the same case by
-     * unlinking the carts first and refusing books that already appear on an order.
+     * The lecture's bare deleteById() cannot delete a book that is sitting in a cart, because
+     * cart_products still holds a row pointing at it - Hibernate raises a referential integrity
+     * violation and the caller gets a 500. ProductDeletionService applies the same rules
+     * BookController.deleteBook applies on the HTML side: unlink the carts first, and refuse a
+     * book that already appears on an order.
      */
-    @Operation(summary = "Delete a book")
+    @Operation(summary = "Delete a book",
+            description = "Takes the book out of any cart first. Refused if it already appears on an order.")
     @ApiResponse(responseCode = "200", description = "Book deleted")
+    @ApiResponse(responseCode = "404", description = "No book with that id")
+    @ApiResponse(responseCode = "409", description = "The book has already been sold")
     @DeleteMapping("/{id}")
     public void deleteBook(@PathVariable Long id) {
-        repository.deleteById(id);
+        if (!repository.existsById(id)) {
+            throw new BookNotFoundException(id);
+        }
+        deletionService.deleteProduct(id);
     }
 }
