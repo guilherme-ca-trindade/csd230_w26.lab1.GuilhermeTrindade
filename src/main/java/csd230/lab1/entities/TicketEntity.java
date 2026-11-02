@@ -1,5 +1,6 @@
 package csd230.lab1.entities;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
@@ -13,7 +14,14 @@ public class TicketEntity extends ProductEntity {
     @Column(name = "ticket_price") private Double price;
 
     public TicketEntity() {}
-    public TicketEntity(String d, Double p) { this.description = d; this.price = p; }
+
+    // Lab 4: see MagazineEntity - Jackson binds this constructor by its parameter names, so
+    // they are spelled out. Without them "d" and "p" bound nothing and only the setters ran.
+    public TicketEntity(@JsonProperty("description") String d,
+                        @JsonProperty("price") Double p) {
+        this.description = d;
+        this.price = p;
+    }
 
     @Override public void sellItem() { System.out.println("Selling Ticket: " + description + " for $" + price); }
     @Override public Double getPrice() { return price; }
