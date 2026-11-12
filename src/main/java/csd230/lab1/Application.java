@@ -2,6 +2,7 @@ package csd230.lab1;
 
 import com.github.javafaker.Commerce;
 import com.github.javafaker.Faker;
+import csd230.lab1.entities.BoardGameEntity;
 import csd230.lab1.entities.BookEntity;
 import csd230.lab1.entities.CartEntity;
 import csd230.lab1.entities.DiscMagEntity;
@@ -9,6 +10,7 @@ import csd230.lab1.entities.MagazineEntity;
 import csd230.lab1.entities.ProductEntity;
 import csd230.lab1.entities.TicketEntity;
 import csd230.lab1.entities.UserEntity;
+import csd230.lab1.repositories.BoardGameEntityRepository;
 import csd230.lab1.repositories.BookEntityRepository;
 import csd230.lab1.repositories.CartEntityRepository;
 import csd230.lab1.repositories.DiscMagEntityRepository;
@@ -26,6 +28,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -40,6 +43,7 @@ public class Application implements CommandLineRunner {
     private final MagazineEntityRepository magazineRepository;
     private final DiscMagEntityRepository discMagRepository;
     private final TicketEntityRepository ticketRepository;
+    private final BoardGameEntityRepository boardGameRepository;   // Lab 5
     private final OrderEntityRepository orderRepository;   // Lab 2
     private final UserEntityRepository userRepository;     // Lecture 2.6
     private final PasswordEncoder passwordEncoder;         // Lecture 2.6, bean from WebSecurityConfig
@@ -50,6 +54,7 @@ public class Application implements CommandLineRunner {
                        MagazineEntityRepository magazineRepository,
                        DiscMagEntityRepository discMagRepository,
                        TicketEntityRepository ticketRepository,
+                       BoardGameEntityRepository boardGameRepository,
                        OrderEntityRepository orderRepository,
                        UserEntityRepository userRepository,
                        PasswordEncoder passwordEncoder) {
@@ -59,6 +64,7 @@ public class Application implements CommandLineRunner {
         this.magazineRepository = magazineRepository;
         this.discMagRepository = discMagRepository;
         this.ticketRepository = ticketRepository;
+        this.boardGameRepository = boardGameRepository;
         this.orderRepository = orderRepository;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
@@ -128,10 +134,23 @@ public class Application implements CommandLineRunner {
         TicketEntity draftTicket = new TicketEntity(cm.productName() + " concert ticket", 89.95);
         TicketEntity draftTicket2 = new TicketEntity(cm.productName() + " cinema ticket", 14.50);
 
+        // Lab 5: the niche product. Fixed values rather than Faker ones, so the board game
+        // page always has a recognisable row to read back after a restart.
+        BoardGameEntity draftBoardGame = new BoardGameEntity(
+                "Mysterium",
+                49.99,
+                4,
+                "Oleg Sidorenko, Oleksandr Nevskiy",
+                2,
+                7,
+                42,
+                true,
+                LocalDate.of(2015, 10, 1));
+
         // a human readable business key, separate from the generated primary key
         int sku = 1000;
         for (ProductEntity p : List.of(draftBook, draftBook2, draftBook3,
-                draftMagazine, draftDiscMag, draftTicket, draftTicket2)) {
+                draftMagazine, draftDiscMag, draftTicket, draftTicket2, draftBoardGame)) {
             p.setProductId("SKU-" + (sku++));
         }
 
@@ -145,6 +164,7 @@ public class Application implements CommandLineRunner {
         final DiscMagEntity discMag = discMagRepository.save(draftDiscMag);
         final TicketEntity ticket = ticketRepository.save(draftTicket);
         final TicketEntity ticket2 = ticketRepository.save(draftTicket2);
+        boardGameRepository.save(draftBoardGame);   // Lab 5
 
         final CartEntity cart1 = cartRepository.save(new CartEntity());
         cart1.addProduct(book);
@@ -283,6 +303,7 @@ public class Application implements CommandLineRunner {
         // from the web pages.
 
         System.out.println("  books on sale   : " + bookRepository.count());
+        System.out.println("  board games     : " + boardGameRepository.count());
         System.out.println("  carts on file   : " + cartRepository.count() + " (Lab 1 demo, no owner)");
         System.out.println("  orders on file  : " + orderRepository.count());
     }
