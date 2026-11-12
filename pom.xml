@@ -88,6 +88,20 @@
 			<version>3.0.0</version>
 		</dependency>
 
+		<!-- Lecture 2.10: JWT. jjwt creates, signs and parses the tokens; jaxb-api
+		     supplies the javax.xml.bind.DatatypeConverter that jjwt 0.9.1 still uses
+		     for its Base64 work, which the JDK dropped after Java 8. -->
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt</artifactId>
+			<version>0.9.1</version>
+		</dependency>
+		<dependency>
+			<groupId>javax.xml.bind</groupId>
+			<artifactId>jaxb-api</artifactId>
+			<version>2.3.0</version>
+		</dependency>
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa-test</artifactId>

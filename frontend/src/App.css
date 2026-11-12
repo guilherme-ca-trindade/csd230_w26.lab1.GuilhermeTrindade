@@ -1,0 +1,14 @@
+/* frontend/src/App.css */
+body { margin: 0; font-family: Arial, sans-serif; color: #222; background: #fff; }
+.app-container { max-width: 900px; margin: 0 auto; padding: 20px; }
+form, .book-row, .magazine-row, .book-card, .book-container { border: 1px solid #ccc; border-radius: 8px; padding: 15px; margin: 10px 0; background: #f9f9f9; }
+form { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; }
+form h2, form h3, form [role="alert"] { flex-basis: 100%; }
+label { display: flex; flex-direction: column; gap: 4px; }
+input { padding: 8px; max-width: 180px; }
+button { padding: 8px 16px; cursor: pointer; margin-right: 8px; }
+button:disabled { cursor: wait; }
+.book-list, .magazine-list { display: flex; flex-direction: column; }
+nav { display: flex; flex-wrap: wrap; gap: 20px; padding: 16px; background: #222; border-radius: 8px; }
+nav a { color: white; font-weight: bold; }
+[role="alert"] { color: #a11; }
