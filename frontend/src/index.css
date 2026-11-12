@@ -1,0 +1,10 @@
+/* frontend/src/index.css - global defaults only.
+   The generated Vite demo styles (dark mode, centred flex body) are deliberately gone:
+   they fight the bookstore layout in App.css. */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+a { color: inherit; text-decoration: none; }
+a:hover { text-decoration: underline; }
