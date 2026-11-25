@@ -1,10 +1,14 @@
 import { useState } from 'react';
+import useAuth from './useAuth.js';
+import api from './api.js';
 
 // Lab 5: the controlled create form, following AddBookForm / MagazineForm.
-// Every input is driven by state, the submit handler stops the browser reload, converts the
-// string inputs to the JSON types BoardGameEntity declares, and only clears the draft once
-// the server has accepted it - a failed save keeps everything the user typed.
+// Every input is driven by state, the submit handler stops the browser reload, converts
+// the string inputs to the JSON types BoardGameEntity declares, and only clears the
+// draft once the server has accepted it - a failed save keeps everything typed.
 export default function AddBoardGameForm({ onBoardGameAdded }) {
+  const { token } = useAuth();
+  const isCurrent = () => localStorage.getItem('token') === token;
   const [title, setTitle] = useState('');
   const [designer, setDesigner] = useState('');
   const [price, setPrice] = useState('');
@@ -20,26 +24,23 @@ export default function AddBoardGameForm({ onBoardGameAdded }) {
   async function handleSubmit(event) {
     event.preventDefault(); setError(''); setSaving(true);
     try {
-      const response = await fetch('/api/rest/boardgames', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title, designer,
-          price: Number(price),
-          copies: Number(copies),
-          minPlayers: Number(minPlayers),
-          maxPlayers: Number(maxPlayers),
-          playTimeMinutes: Number(playTimeMinutes),
-          cooperative,                 // already a boolean from the checkbox
-          releaseDate                  // yyyy-MM-dd, exactly what LocalDate parses
-        })
+      const response = await api.post('/boardgames', {
+        title, designer,
+        price: Number(price),
+        copies: Number(copies),
+        minPlayers: Number(minPlayers),
+        maxPlayers: Number(maxPlayers),
+        playTimeMinutes: Number(playTimeMinutes),
+        cooperative,                 // already a boolean from the checkbox
+        releaseDate                  // yyyy-MM-dd, exactly what LocalDate parses
       });
-      if (!response.ok) throw new Error(`Save failed (${response.status})`);
-      onBoardGameAdded(await response.json());
+      if (!isCurrent()) return;
+      onBoardGameAdded(response.data);
       setTitle(''); setDesigner(''); setPrice(''); setCopies(1);
       setMinPlayers(1); setMaxPlayers(4); setPlayTimeMinutes(60);
       setCooperative(false); setReleaseDate('');
-    } catch (err) { setError(err.message); }
-    finally { setSaving(false); }
+    } catch (err) { if (isCurrent()) setError(err.message); }
+    finally { if (isCurrent()) setSaving(false); }
   }
 
   return <form onSubmit={handleSubmit}>
