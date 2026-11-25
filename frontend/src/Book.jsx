@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-export default function Book({ book, onDelete, onUpdate }) {
+export default function Book({ book, onDelete, onUpdate, onAddToCart, cartPending, canManage }) {
   const [isEditing, setIsEditing] = useState(false);
   const [draft, setDraft] = useState(book);
   const [error, setError] = useState('');
@@ -39,7 +39,9 @@ export default function Book({ book, onDelete, onUpdate }) {
   return <article className="book-row">
     <h3>{book.title}</h3>
     <p>{book.author} | ${Number(book.price).toFixed(2)} | Copies: {book.copies}</p>
-    <button onClick={beginEdit}>Edit</button>
-    <button onClick={() => onDelete(book.id)}>Delete</button>
+    {/* the cart belongs to whoever is signed in, so both roles keep this button */}
+    <button disabled={cartPending} onClick={() => onAddToCart(book.id)}>Add to Cart</button>
+    {canManage && <button onClick={beginEdit}>Edit</button>}
+    {canManage && <button onClick={() => onDelete(book.id)}>Delete</button>}
   </article>;
 }

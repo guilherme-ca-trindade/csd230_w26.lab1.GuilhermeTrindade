@@ -70,11 +70,16 @@ public class WebSecurityConfig {
                 // 2. admin only: the book CRUD. A USER hitting these gets 403 Forbidden
                 .requestMatchers("/books/add", "/books/edit/**", "/books/delete/**").hasRole("ADMIN")
 
-                // Lecture 2.11: TEMPORARY - the React frontend has no login screen yet, so
-                // it cannot send a token. This opens the API for the classroom exercises
-                // only and shadows the two role rules below it. Lecture 2.12 removes this
-                // line and the frontend starts sending the Bearer token instead.
-                .requestMatchers("/api/rest/**").permitAll()
+                // Lecture 2.12: the React frontend now signs in and sends a Bearer token,
+                // so the temporary permitAll for /api/rest/** is gone.
+
+                // Current-user JSON actions: controller resolves ownership from Principal.
+                .requestMatchers(HttpMethod.GET, "/api/rest/carts/mine").hasAnyRole("USER", "ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/rest/carts/mine/products/*").hasAnyRole("USER", "ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/rest/carts/mine/products/*").hasAnyRole("USER", "ADMIN")
+
+                // Original whole-cart CRUD is administrative, including list/by-ID reads.
+                .requestMatchers("/api/rest/carts", "/api/rest/carts/**").hasRole("ADMIN")
 
                 // Lecture 2.10: reading the API needs any signed-in role, writing to it
                 // needs ADMIN. The GET rule has to come first - the one below it matches

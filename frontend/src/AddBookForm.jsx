@@ -1,6 +1,10 @@
 import { useState } from 'react';
+import useAuth from './useAuth.js';
+import api from './api.js';
 
 export default function AddBookForm({ onBookAdded }) {
+  const { token } = useAuth();
+  const isCurrent = () => localStorage.getItem('token') === token;
   const [title, setTitle] = useState('');
   const [author, setAuthor] = useState('');
   const [price, setPrice] = useState('');
@@ -12,17 +16,17 @@ export default function AddBookForm({ onBookAdded }) {
     event.preventDefault();
     setError(''); setSaving(true);
     try {
-      const response = await fetch('/api/rest/books', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, author, price: Number(price), copies: Number(copies) })
+      // Axios serializes the object and rejects any non-2xx status, so the catch below
+      // covers a failed HTTP response as well as a network failure.
+      const response = await api.post('/books', {
+        title, author, price: Number(price), copies: Number(copies)
       });
-      if (!response.ok) throw new Error(`Save failed (${response.status})`);
-      const savedBook = await response.json();
+      if (!isCurrent()) return;
+      const savedBook = response.data;
       onBookAdded(savedBook);
       setTitle(''); setAuthor(''); setPrice(''); setCopies(10);
-    } catch (err) { setError(err.message); }
-    finally { setSaving(false); }
+    } catch (err) { if (isCurrent()) setError(err.message); }
+    finally { if (isCurrent()) setSaving(false); }
   }
 
   return <form onSubmit={handleSubmit}>

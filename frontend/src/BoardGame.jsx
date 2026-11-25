@@ -4,7 +4,7 @@ import { useState } from 'react';
 // It receives the saved record and the two mutation callbacks as props and never writes to
 // them: beginEdit copies the props into a local draft, and only an accepted PUT closes the
 // editor, so a rejected save keeps whatever the user typed.
-export default function BoardGame({ boardGame, onDelete, onUpdate }) {
+export default function BoardGame({ boardGame, onDelete, onUpdate, onAddToCart, cartPending, canManage }) {
   const [isEditing, setIsEditing] = useState(false);
   const [draft, setDraft] = useState(boardGame);
   const [error, setError] = useState('');
@@ -64,7 +64,8 @@ export default function BoardGame({ boardGame, onDelete, onUpdate }) {
       Released: {boardGame.releaseDate}
     </p>
     <p>{boardGame.cooperative ? 'Cooperative' : 'Competitive'}</p>
-    <button onClick={beginEdit}>Edit</button>
-    <button onClick={() => onDelete(boardGame.id)}>Delete</button>
+    <button disabled={cartPending} onClick={() => onAddToCart(boardGame.id)}>Add to Cart</button>
+    {canManage && <button onClick={beginEdit}>Edit</button>}
+    {canManage && <button onClick={() => onDelete(boardGame.id)}>Delete</button>}
   </article>;
 }

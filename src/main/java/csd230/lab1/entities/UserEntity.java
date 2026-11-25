@@ -1,6 +1,7 @@
 package csd230.lab1.entities;
 
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
  * Lecture 2.6: the login credentials. Spring Security does not read this class directly -
@@ -37,6 +38,9 @@ public class UserEntity {
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }
 
+    // Lecture 2.12: WRITE_ONLY still accepts a password on input but keeps the hash out
+    // of any JSON this entity appears in - including the user nested in a cart response.
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
 
